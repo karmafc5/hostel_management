@@ -44,13 +44,13 @@ The checked-in Gradle wrapper downloads the required Gradle version.
 
 ## Configure MongoDB Atlas and start the backend
 
-The database password in the shared screenshot must be rotated before use. In Atlas, create a replacement database user with only the required database access, add the development computer's current public IP to Network Access, and copy the cluster hostname. Do not use `0.0.0.0/0` for routine development.
+The database password shown in the shared screenshot has been rotated. The app uses a dedicated database user limited to `readWrite` access on `hostel_maintenance`. In Atlas, add the development computer's current public IP to Network Access. Do not use `0.0.0.0/0` for routine development.
 
 The following keeps the newly rotated password out of command history and source control. Enter it in the secure credential prompt; the URI-encoded value is held only in this PowerShell process:
 
 ```powershell
-$credential = Get-Credential -UserName "<new-atlas-database-user>"
-$clusterHost = "<your-cluster-host>"
+$credential = Get-Credential -UserName "deere7653_db_user"
+$clusterHost = "cluster0.t871kb0.mongodb.net"
 $encodedUser = [Uri]::EscapeDataString($credential.UserName)
 $encodedPassword = [Uri]::EscapeDataString($credential.GetNetworkCredential().Password)
 $env:MONGODB_URI = "mongodb+srv://${encodedUser}:${encodedPassword}@${clusterHost}/hostel_maintenance?retryWrites=true&w=majority&appName=HostelMaintenance"
@@ -60,9 +60,8 @@ $secretBytes = New-Object byte[] 48
 $rng.GetBytes($secretBytes)
 $env:JWT_SECRET = [Convert]::ToBase64String($secretBytes)
 
-# Optional: create the first administrator. Use a unique password of at least 12 characters.
-$env:BOOTSTRAP_ADMIN_EMAIL = "<administrator-email>"
-$env:BOOTSTRAP_ADMIN_PASSWORD = "<strong-administrator-password>"
+# Optional: set BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD from secure local values.
+# Do not put real administrator credentials in this file or source control.
 
 .\gradlew.bat :backend:run
 ```

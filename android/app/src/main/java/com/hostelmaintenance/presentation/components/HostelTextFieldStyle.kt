@@ -5,29 +5,28 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun hostelTextFieldTextStyle(): TextStyle = MaterialTheme.typography.bodyLarge.copy(
-    color = Color.Black,
+    color = MaterialTheme.colorScheme.onSurface,
     fontSize = 18.sp,
     fontWeight = FontWeight.Bold
 )
 
 @Composable
 fun hostelTextFieldColors(): TextFieldColors = OutlinedTextFieldDefaults.colors(
-    focusedTextColor = Color.Black,
-    unfocusedTextColor = Color.Black,
+    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
     disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    focusedLabelColor = Color.Black,
+    focusedLabelColor = MaterialTheme.colorScheme.primary,
     unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
     cursorColor = MaterialTheme.colorScheme.primary,
-    focusedBorderColor = Color.Black,
-    unfocusedBorderColor = Color(0xFF344054),
-    disabledBorderColor = Color(0xFF667085)
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+    disabledBorderColor = MaterialTheme.colorScheme.outlineVariant
 )
 
 @Composable
