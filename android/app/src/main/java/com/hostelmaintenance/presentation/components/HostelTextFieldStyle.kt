@@ -24,7 +24,10 @@ fun hostelTextFieldColors(): TextFieldColors = OutlinedTextFieldDefaults.colors(
     disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
     focusedLabelColor = Color.Black,
     unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
-    cursorColor = MaterialTheme.colorScheme.primary
+    cursorColor = MaterialTheme.colorScheme.primary,
+    focusedBorderColor = Color.Black,
+    unfocusedBorderColor = Color(0xFF344054),
+    disabledBorderColor = Color(0xFF667085)
 )
 
 @Composable

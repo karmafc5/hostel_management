@@ -16,6 +16,17 @@ A Kotlin project with a Jetpack Compose Android client and a Ktor REST backend. 
 - `**/build`: generated Gradle output, ignored by Git; source stays under each module's `src` directory.
 - `.env.example`: environment-variable names only. The backend reads process environment variables; it does not load a `.env` file.
 
+## Report data path
+
+The report code is separated by responsibility:
+
+1. Android form: `android/app/src/main/java/com/hostelmaintenance/presentation/report/ReportProblemScreen.kt`.
+2. Android state and network access: `presentation/report/ReportsViewModel.kt` → `data/report/ReportRepository.kt` → `data/remote/MaintenanceReportApi.kt`.
+3. Backend endpoints and validation: `backend/src/main/kotlin/com/hostelmaintenance/reports/MaintenanceReportRoutes.kt` and `MaintenanceReport.kt`.
+4. MongoDB writes and reads: `backend/src/main/kotlin/com/hostelmaintenance/database/MongoMaintenanceReportRepository.kt`, using the `maintenanceReports` collection.
+
+`POST /reports` inserts a resident-owned report; `GET /reports/me` returns that resident's saved reports newest first. The Android client sends both requests through the same authenticated Retrofit client. MongoDB credentials stay on the backend; configure `MONGODB_URI` and `JWT_SECRET` before starting it.
+
 ## Prerequisites
 
 - JDK 17 or newer.

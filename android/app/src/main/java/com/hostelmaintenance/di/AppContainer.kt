@@ -7,6 +7,7 @@ import com.hostelmaintenance.BuildConfig
 import com.hostelmaintenance.data.local.AndroidTokenStore
 import com.hostelmaintenance.data.remote.AuthApi
 import com.hostelmaintenance.data.remote.AuthorizationInterceptor
+import com.hostelmaintenance.data.remote.MaintenanceReportApi
 import com.hostelmaintenance.data.auth.AuthRepository
 import com.hostelmaintenance.presentation.auth.AuthViewModel
 import com.hostelmaintenance.data.report.ReportRepository
@@ -17,7 +18,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class AppContainer(context: Context) {
     private val tokenStore = AndroidTokenStore(context.applicationContext)
-    private val authApi = Retrofit.Builder()
+    private val retrofit = Retrofit.Builder()
         .baseUrl(BuildConfig.API_BASE_URL)
         .client(
             OkHttpClient.Builder()
@@ -26,10 +27,11 @@ class AppContainer(context: Context) {
         )
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-        .create(AuthApi::class.java)
+    private val authApi = retrofit.create(AuthApi::class.java)
+    private val reportApi = retrofit.create(MaintenanceReportApi::class.java)
 
     private val authRepository = AuthRepository(authApi, tokenStore)
-    private val reportRepository = ReportRepository(authApi)
+    private val reportRepository = ReportRepository(reportApi)
 
     val authViewModelFactory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
