@@ -80,7 +80,7 @@ private fun HomeDashboard(
                 Text(
                     "Welcome, ${user.fullName.substringBefore(' ')}",
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.ExtraBold
                 )
                 Text("Your maintenance overview and recent activity.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -165,7 +165,7 @@ private fun ReportsScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text("My reports", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text("My reports", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
             OutlinedButton(onClick = onRefresh, enabled = !state.isLoading) { Text("Refresh") }
         }
         if (state.reports.any { it.isDemo }) {
@@ -232,7 +232,7 @@ private fun ProfileSection(contentPadding: PaddingValues, user: UserDto, onSignO
         modifier = Modifier.fillMaxSize().padding(contentPadding).padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Your profile", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text("Your profile", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
         Text(user.fullName, style = MaterialTheme.typography.titleLarge)
         Text(user.email, color = MaterialTheme.colorScheme.onSurfaceVariant)
         user.studentId?.let { Text("Student ID: $it") }

@@ -12,6 +12,8 @@ A Kotlin project with a Jetpack Compose Android client and a Ktor REST backend. 
 - `android/app/src/main/java/com/hostelmaintenance/presentation`: Compose screens, ViewModels, and theme.
 - `backend/src/main/kotlin/com/hostelmaintenance`: Ktor REST API, authentication, and report features.
 - `backend/src/main/kotlin/com/hostelmaintenance/database`: MongoDB repositories and database access. The Android app talks to MongoDB through the backend API.
+- `backend/src/test/kotlin`: backend tests.
+- `**/build`: generated Gradle output, ignored by Git; source stays under each module's `src` directory.
 - `.env.example`: environment-variable names only. The backend reads process environment variables; it does not load a `.env` file.
 
 ## Prerequisites

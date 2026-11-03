@@ -62,7 +62,7 @@ fun AuthScreen(
             "Hostel Maintenance",
             modifier = Modifier.padding(top = 12.dp),
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.ExtraBold
         )
         Text(
             if (state.isRegistrationMode) "Create your resident account" else "Sign in to manage your requests",

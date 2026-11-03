@@ -12,8 +12,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun hostelTextFieldTextStyle(): TextStyle = MaterialTheme.typography.bodyLarge.copy(
     color = MaterialTheme.colorScheme.onSurface,
-    fontSize = 18.sp,
-    fontWeight = FontWeight.SemiBold
+    fontSize = 16.sp,
+    fontWeight = FontWeight.Medium
 )
 
 @Composable
