@@ -42,9 +42,21 @@ class ReportsViewModel(private val repository: ReportRepository) : ViewModel() {
                 }
                 mutableState.update { it.copy(isLoading = false, reports = visibleReports) }
             } catch (exception: HttpException) {
-                mutableState.update { it.copy(isLoading = false, errorMessage = httpError(exception)) }
+                mutableState.update {
+                    it.copy(
+                        isLoading = false,
+                        reports = previewIfNeeded(it.reports),
+                        errorMessage = httpError(exception)
+                    )
+                }
             } catch (exception: IOException) {
-                mutableState.update { it.copy(isLoading = false, errorMessage = "Unable to reach the server. Check your connection.") }
+                mutableState.update {
+                    it.copy(
+                        isLoading = false,
+                        reports = previewIfNeeded(it.reports),
+                        errorMessage = "Unable to reach the server. Showing sample preview data."
+                    )
+                }
             }
         }
     }
@@ -74,6 +86,9 @@ class ReportsViewModel(private val repository: ReportRepository) : ViewModel() {
     fun clear() {
         mutableState.value = ReportsUiState()
     }
+
+    private fun previewIfNeeded(reports: List<MaintenanceReportDto>): List<MaintenanceReportDto> =
+        if (BuildConfig.DEBUG && reports.isEmpty()) DemoReportSamples.create() else reports
 
     private fun httpError(exception: HttpException): String {
         val fallback = when (exception.code()) {
