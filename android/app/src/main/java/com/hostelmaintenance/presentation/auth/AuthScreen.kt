@@ -30,6 +30,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
 import com.hostelmaintenance.data.auth.UserDto
+import com.hostelmaintenance.presentation.components.HostelFieldLabel
+import com.hostelmaintenance.presentation.components.hostelTextFieldColors
+import com.hostelmaintenance.presentation.components.hostelTextFieldTextStyle
 
 @Composable
 fun AuthScreen(
@@ -73,7 +76,9 @@ fun AuthScreen(
                 value = fullName,
                 onValueChange = { fullName = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Full name *") },
+                label = { HostelFieldLabel("Full name *") },
+                textStyle = hostelTextFieldTextStyle(),
+                colors = hostelTextFieldColors(),
                 singleLine = true,
                 enabled = !state.isLoading
             )
@@ -83,7 +88,9 @@ fun AuthScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 12.dp),
-                label = { Text("Student ID *") },
+                label = { HostelFieldLabel("Student ID *") },
+                textStyle = hostelTextFieldTextStyle(),
+                colors = hostelTextFieldColors(),
                 singleLine = true,
                 enabled = !state.isLoading
             )
@@ -94,7 +101,9 @@ fun AuthScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 12.dp),
-            label = { Text("University email *") },
+            label = { HostelFieldLabel("University email *") },
+            textStyle = hostelTextFieldTextStyle(),
+            colors = hostelTextFieldColors(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
             enabled = !state.isLoading
@@ -105,7 +114,9 @@ fun AuthScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 12.dp),
-            label = { Text("Password *") },
+            label = { HostelFieldLabel("Password *") },
+            textStyle = hostelTextFieldTextStyle(),
+            colors = hostelTextFieldColors(),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,

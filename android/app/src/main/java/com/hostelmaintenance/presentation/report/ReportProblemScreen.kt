@@ -26,6 +26,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hostelmaintenance.data.report.CreateReportRequestDto
+import com.hostelmaintenance.presentation.components.HostelFieldLabel
+import com.hostelmaintenance.presentation.components.hostelTextFieldColors
+import com.hostelmaintenance.presentation.components.hostelTextFieldTextStyle
 
 private val categories = listOf(
     "Plumbing problems",
@@ -81,7 +84,9 @@ fun ReportProblemScreen(
             value = title,
             onValueChange = { title = it.take(120) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Complaint title *") },
+            label = { HostelFieldLabel("Complaint title *") },
+            textStyle = hostelTextFieldTextStyle(),
+            colors = hostelTextFieldColors(),
             singleLine = true,
             isError = showValidation && title.trim().length < 3
         )
@@ -121,7 +126,9 @@ fun ReportProblemScreen(
             value = description,
             onValueChange = { description = it.take(2000) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Description *") },
+            label = { HostelFieldLabel("Description *") },
+            textStyle = hostelTextFieldTextStyle(),
+            colors = hostelTextFieldColors(),
             minLines = 4,
             isError = showValidation && description.trim().length < 10
         )
@@ -140,7 +147,9 @@ fun ReportProblemScreen(
                 value = hostel,
                 onValueChange = { hostel = it.take(100) },
                 modifier = Modifier.weight(1f),
-                label = { Text("Hostel *") },
+                label = { HostelFieldLabel("Hostel *") },
+                textStyle = hostelTextFieldTextStyle(),
+                colors = hostelTextFieldColors(),
                 singleLine = true,
                 isError = showValidation && hostel.isBlank()
             )
@@ -148,7 +157,9 @@ fun ReportProblemScreen(
                 value = room,
                 onValueChange = { room = it.take(30) },
                 modifier = Modifier.weight(1f),
-                label = { Text("Room *") },
+                label = { HostelFieldLabel("Room *") },
+                textStyle = hostelTextFieldTextStyle(),
+                colors = hostelTextFieldColors(),
                 singleLine = true,
                 isError = showValidation && room.isBlank()
             )
