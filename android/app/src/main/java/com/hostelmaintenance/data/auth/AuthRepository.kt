@@ -1,6 +1,7 @@
 package com.hostelmaintenance.data.auth
 
-import com.hostelmaintenance.network.AuthApi
+import com.hostelmaintenance.data.local.TokenStore
+import com.hostelmaintenance.data.remote.AuthApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -1,4 +1,4 @@
-package com.hostelmaintenance.network
+package com.hostelmaintenance.data.remote
 
 import com.hostelmaintenance.data.auth.AuthResponseDto
 import com.hostelmaintenance.data.auth.LoginRequestDto

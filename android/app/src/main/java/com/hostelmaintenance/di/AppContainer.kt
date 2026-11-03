@@ -1,13 +1,13 @@
-package com.hostelmaintenance.data
+package com.hostelmaintenance.di
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.hostelmaintenance.BuildConfig
-import com.hostelmaintenance.data.auth.AndroidTokenStore
+import com.hostelmaintenance.data.local.AndroidTokenStore
+import com.hostelmaintenance.data.remote.AuthApi
+import com.hostelmaintenance.data.remote.AuthorizationInterceptor
 import com.hostelmaintenance.data.auth.AuthRepository
-import com.hostelmaintenance.network.AuthApi
-import com.hostelmaintenance.network.AuthorizationInterceptor
 import com.hostelmaintenance.presentation.auth.AuthViewModel
 import com.hostelmaintenance.data.report.ReportRepository
 import com.hostelmaintenance.presentation.report.ReportsViewModel

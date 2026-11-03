@@ -1,6 +1,6 @@
-package com.hostelmaintenance.network
+package com.hostelmaintenance.data.remote
 
-import com.hostelmaintenance.data.auth.TokenStore
+import com.hostelmaintenance.data.local.TokenStore
 import okhttp3.Interceptor
 import okhttp3.Response
 

@@ -4,8 +4,14 @@ A Kotlin project with a Jetpack Compose Android client and a Ktor REST backend. 
 
 ## Project layout
 
-- `android/app`: Android client, Compose screens, networking, and authentication.
-- `backend`: Ktor REST API, JWT/password authentication, MongoDB repositories, and tests.
+- `android/app/src/main/java/com/hostelmaintenance/app`: Android application setup and `MainActivity` entry point.
+- `android/app/src/main/java/com/hostelmaintenance/di`: app dependency wiring and ViewModel factories.
+- `android/app/src/main/java/com/hostelmaintenance/data/local`: encrypted on-device token storage.
+- `android/app/src/main/java/com/hostelmaintenance/data/remote`: Retrofit API and authorization interceptor.
+- `android/app/src/main/java/com/hostelmaintenance/data/auth` and `data/report`: authentication and report DTOs/repositories.
+- `android/app/src/main/java/com/hostelmaintenance/presentation`: Compose screens, ViewModels, and theme.
+- `backend/src/main/kotlin/com/hostelmaintenance`: Ktor REST API, authentication, and report features.
+- `backend/src/main/kotlin/com/hostelmaintenance/database`: MongoDB repositories and database access. The Android app talks to MongoDB through the backend API.
 - `.env.example`: environment-variable names only. The backend reads process environment variables; it does not load a `.env` file.
 
 ## Prerequisites

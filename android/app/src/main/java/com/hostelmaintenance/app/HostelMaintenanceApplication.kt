@@ -1,7 +1,7 @@
-package com.hostelmaintenance
+package com.hostelmaintenance.app
 
 import android.app.Application
-import com.hostelmaintenance.data.AppContainer
+import com.hostelmaintenance.di.AppContainer
 
 class HostelMaintenanceApplication : Application() {
     lateinit var appContainer: AppContainer

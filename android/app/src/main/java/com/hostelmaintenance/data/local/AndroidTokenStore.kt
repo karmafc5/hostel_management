@@ -1,4 +1,4 @@
-package com.hostelmaintenance.data.auth
+package com.hostelmaintenance.data.local
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec

@@ -1,4 +1,4 @@
-package com.hostelmaintenance.data.auth
+package com.hostelmaintenance.data.local
 
 interface TokenStore {
     fun read(): String?

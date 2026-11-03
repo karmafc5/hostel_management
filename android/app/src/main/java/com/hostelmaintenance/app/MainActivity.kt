@@ -1,9 +1,10 @@
-package com.hostelmaintenance
+package com.hostelmaintenance.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import com.hostelmaintenance.di.AppContainer
 import com.hostelmaintenance.presentation.auth.AuthViewModel
 import com.hostelmaintenance.presentation.MaintenanceApp
 import com.hostelmaintenance.presentation.theme.HostelMaintenanceTheme
