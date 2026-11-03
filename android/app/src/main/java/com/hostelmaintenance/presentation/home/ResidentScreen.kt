@@ -8,16 +8,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.HomeWork
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -29,29 +30,27 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.hostelmaintenance.data.auth.UserDto
+import com.hostelmaintenance.data.report.MaintenanceReportDto
+import com.hostelmaintenance.presentation.report.ReportsUiState
 
 @Composable
 fun ResidentScreen(
     tab: String,
     user: UserDto,
     contentPadding: PaddingValues,
+    reports: ReportsUiState,
+    onRefreshReports: () -> Unit,
     onReportProblem: () -> Unit,
     onViewAllReports: () -> Unit,
     onSignOut: () -> Unit
 ) {
     when (tab) {
-        "Home" -> HomeDashboard(user, contentPadding, onReportProblem, onViewAllReports)
-        "My Reports" -> EmptySection(
-            contentPadding = contentPadding,
-            icon = Icons.AutoMirrored.Filled.ReceiptLong,
-            title = "Your reports will appear here",
-            message = "Maintenance requests you submit will be listed here with their latest status."
-        )
+        "Home" -> HomeDashboard(user, contentPadding, reports, onReportProblem, onViewAllReports)
+        "My Reports" -> ReportsScreen(contentPadding, reports, onRefreshReports)
         "Notifications" -> EmptySection(
-            contentPadding = contentPadding,
-            icon = Icons.Filled.Campaign,
-            title = "You're all caught up",
-            message = "Updates about your maintenance requests will appear here."
+            contentPadding,
+            "Notifications are coming soon",
+            "Your saved maintenance requests are available under My Reports."
         )
         else -> ProfileSection(contentPadding, user, onSignOut)
     }
@@ -61,6 +60,7 @@ fun ResidentScreen(
 private fun HomeDashboard(
     user: UserDto,
     contentPadding: PaddingValues,
+    reports: ReportsUiState,
     onReportProblem: () -> Unit,
     onViewAllReports: () -> Unit
 ) {
@@ -82,12 +82,11 @@ private fun HomeDashboard(
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Text(
-                    "Your maintenance overview and recent activity.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text("Your maintenance overview and recent activity.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+        }
+        reports.successMessage?.let { message ->
+            item { Text(message, color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.bodyMedium) }
         }
         item {
             Button(
@@ -105,12 +104,14 @@ private fun HomeDashboard(
                 DashboardCard(
                     modifier = Modifier.weight(1f),
                     icon = Icons.AutoMirrored.Filled.ReceiptLong,
-                    title = "My reports"
+                    title = "My reports",
+                    value = reports.reports.size.toString()
                 )
                 DashboardCard(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Filled.Build,
-                    title = "In progress"
+                    title = "In progress",
+                    value = reports.reports.count { it.status == "IN_PROGRESS" }.toString()
                 )
             }
         }
@@ -120,17 +121,13 @@ private fun HomeDashboard(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Icon(Icons.Filled.HomeWork, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
                         Text("Hostel & room", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     }
                     Text(
-                        user.roomNumber?.let { "Room $it" } ?: "Room assignment not available.",
-                        style = MaterialTheme.typography.bodyMedium,
+                        user.roomNumber?.let { "Room $it" } ?: "Add your hostel and room when you report an issue.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -143,58 +140,89 @@ private fun HomeDashboard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Recent requests", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                OutlinedButton(onClick = onViewAllReports) {
-                    Text("View all")
-                }
+                OutlinedButton(onClick = onViewAllReports) { Text("View all") }
             }
-            Text(
-                "Your request history will appear when the reports service is connected.",
-                modifier = Modifier.padding(top = 8.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        }
+        if (reports.reports.isEmpty() && !reports.isLoading) {
+            item { Text("Your submitted reports will appear here.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        } else {
+            items(reports.reports.take(3), key = { it.id }) { report -> ReportCard(report) }
+        }
+        if (reports.errorMessage != null) {
+            item { Text(reports.errorMessage, color = MaterialTheme.colorScheme.error) }
         }
     }
 }
 
 @Composable
-private fun DashboardCard(
-    modifier: Modifier,
-    icon: ImageVector,
-    title: String
+private fun ReportsScreen(
+    contentPadding: PaddingValues,
+    state: ReportsUiState,
+    onRefresh: () -> Unit
 ) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(contentPadding).padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text("My reports", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            OutlinedButton(onClick = onRefresh, enabled = !state.isLoading) { Text("Refresh") }
+        }
+        state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        if (state.isLoading && state.reports.isEmpty()) {
+            CircularProgressIndicator()
+        } else if (state.reports.isEmpty()) {
+            Text("No reports yet. Use Report a problem to submit your first request.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(state.reports, key = { it.id }) { report -> ReportCard(report) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReportCard(report: MaintenanceReportDto) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(report.title, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(report.status.replace('_', ' '), color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelMedium)
+            }
+            Text("${report.category} · ${report.priority.lowercase().replaceFirstChar(Char::uppercase)} priority")
+            Text("${report.hostel}, room ${report.room}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(report.description, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(report.createdAt.take(10), style = MaterialTheme.typography.labelSmall)
+                if (report.isDemo) Text("Sample", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DashboardCard(modifier: Modifier, icon: ImageVector, title: String, value: String) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
             Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
-            Text("—", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(
-                "Live data loading soon",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(value, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 @Composable
-private fun ProfileSection(
-    contentPadding: PaddingValues,
-    user: UserDto,
-    onSignOut: () -> Unit
-) {
+private fun ProfileSection(contentPadding: PaddingValues, user: UserDto, onSignOut: () -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .padding(horizontal = 20.dp, vertical = 24.dp),
+        modifier = Modifier.fillMaxSize().padding(contentPadding).padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Your profile", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
@@ -202,39 +230,18 @@ private fun ProfileSection(
         Text(user.email, color = MaterialTheme.colorScheme.onSurfaceVariant)
         user.studentId?.let { Text("Student ID: $it") }
         Text("Role: ${user.role.lowercase().replaceFirstChar(Char::uppercase)}")
-        OutlinedButton(onClick = onSignOut, modifier = Modifier.fillMaxWidth()) {
-            Text("Sign out")
-        }
+        OutlinedButton(onClick = onSignOut, modifier = Modifier.fillMaxWidth()) { Text("Sign out") }
     }
 }
 
 @Composable
-private fun EmptySection(
-    contentPadding: PaddingValues,
-    icon: ImageVector,
-    title: String,
-    message: String
-) {
+private fun EmptySection(contentPadding: PaddingValues, title: String, message: String) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .padding(horizontal = 28.dp),
+        modifier = Modifier.fillMaxSize().padding(contentPadding).padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
-        Text(
-            title,
-            modifier = Modifier.padding(top = 16.dp),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold
-        )
-        Text(
-            message,
-            modifier = Modifier.padding(top = 8.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        Text(message, modifier = Modifier.padding(top = 8.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

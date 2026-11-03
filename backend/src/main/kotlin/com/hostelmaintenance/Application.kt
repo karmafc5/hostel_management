@@ -22,6 +22,9 @@ import com.hostelmaintenance.auth.PasswordHasher
 import com.hostelmaintenance.auth.configureAuthentication
 import com.hostelmaintenance.config.ServerConfig
 import com.hostelmaintenance.database.MongoUserRepository
+import com.hostelmaintenance.database.MongoMaintenanceReportRepository
+import com.hostelmaintenance.auth.UserRole
+import com.hostelmaintenance.reports.configureMaintenanceReportRoutes
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
@@ -52,9 +55,22 @@ fun main() {
     val mongoClient = MongoClient.create(config.mongoUri)
     val mongoDatabase = mongoClient.getDatabase(config.mongoDatabase)
     val mongoUsers = MongoUserRepository(mongoDatabase.getCollection("users"))
+    val mongoReports = MongoMaintenanceReportRepository(mongoDatabase.getCollection("maintenanceReports"))
     runBlocking {
         mongoUsers.createIndexes()
+        mongoReports.createIndexes()
         AdminBootstrapper(mongoUsers, PasswordHasher()).bootstrap(System.getenv())
+        System.getenv("MOCK_DATA_STUDENT_EMAIL")
+            ?.trim()
+            ?.takeIf(String::isNotEmpty)
+            ?.let { email ->
+                val demoStudent = mongoUsers.findByEmail(email.lowercase())
+                    ?: error("MOCK_DATA_STUDENT_EMAIL must match an existing resident account")
+                require(demoStudent.role == UserRole.STUDENT) {
+                    "MOCK_DATA_STUDENT_EMAIL must belong to a resident account"
+                }
+                mongoReports.seedDemoDataIfEmpty(demoStudent.id)
+            }
     }
 
     val tokenService = JwtTokenService(
@@ -67,6 +83,7 @@ fun main() {
     val server = embeddedServer(Netty, port = config.port, host = "0.0.0.0") {
         module()
         configureAuthentication(authService, mongoUsers, tokenService)
+        configureMaintenanceReportRoutes(mongoReports)
     }
     server.application.monitor.subscribe(ApplicationStopped) {
         mongoClient.close()

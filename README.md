@@ -50,9 +50,13 @@ $env:BOOTSTRAP_ADMIN_PASSWORD = "<strong-administrator-password>"
 
 The backend requires `MONGODB_URI` and a `JWT_SECRET` of at least 32 bytes. It creates unique user indexes during startup. The optional administrator is created once and can provision maintenance staff through the protected admin API. Atlas connectivity must be verified in your environment after setting the rotated credentials.
 
+Residents can submit maintenance reports with a title, category, description, hostel, room, and priority. The authenticated API stores each report in the `maintenanceReports` collection, ties it to the signed-in resident, and returns the resident's saved reports in newest-first order. The phone's **My Reports** tab reads those records from the backend.
+
+To load sample reports for an existing resident account, set `MOCK_DATA_STUDENT_EMAIL` to that resident's email before starting the backend. On startup, the backend adds three clearly marked sample reports only when that resident has no reports yet. It does not create demo accounts or use built-in demo passwords.
+
 ## Android app
 
-The Android client currently supports resident registration/sign-in against the API, encrypted local token storage, resident navigation, and a validated report form with gallery image selection. The report form clearly reports that submission is not yet connected. Maintenance request processing, staff/admin screens, and notifications are not yet implemented.
+The Android client supports resident registration/sign-in against the API, encrypted local token storage, resident navigation, and report submission/history backed by MongoDB through the API. The report form validates its fields on the phone and the server; it shows a save error if the request fails. Image attachments, staff/admin screens, and notifications are not implemented.
 
 The emulator uses `http://10.0.2.2:8080/` by default. To connect a physical phone on the same local network, build with the development computer's LAN IP:
 

@@ -9,6 +9,8 @@ import com.hostelmaintenance.data.auth.AuthRepository
 import com.hostelmaintenance.network.AuthApi
 import com.hostelmaintenance.network.AuthorizationInterceptor
 import com.hostelmaintenance.presentation.auth.AuthViewModel
+import com.hostelmaintenance.data.report.ReportRepository
+import com.hostelmaintenance.presentation.report.ReportsViewModel
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -27,6 +29,7 @@ class AppContainer(context: Context) {
         .create(AuthApi::class.java)
 
     private val authRepository = AuthRepository(authApi, tokenStore)
+    private val reportRepository = ReportRepository(authApi)
 
     val authViewModelFactory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -34,6 +37,15 @@ class AppContainer(context: Context) {
                 throw IllegalArgumentException("Unsupported ViewModel type: ${modelClass.name}")
             }
             return modelClass.cast(AuthViewModel(authRepository))
+        }
+    }
+
+    val reportsViewModelFactory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (!modelClass.isAssignableFrom(ReportsViewModel::class.java)) {
+                throw IllegalArgumentException("Unsupported ViewModel type: ${modelClass.name}")
+            }
+            return modelClass.cast(ReportsViewModel(reportRepository))
         }
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,6 +29,9 @@ import com.hostelmaintenance.presentation.auth.AuthViewModel
 import com.hostelmaintenance.presentation.auth.RoleNotAvailableScreen
 import com.hostelmaintenance.presentation.home.ResidentScreen
 import com.hostelmaintenance.presentation.report.ReportProblemScreen
+import com.hostelmaintenance.presentation.report.ReportsUiState
+import com.hostelmaintenance.presentation.report.ReportsViewModel
+import com.hostelmaintenance.data.report.CreateReportRequestDto
 
 private enum class ResidentTab(val label: String) {
     Home("Home"),
@@ -38,9 +42,18 @@ private enum class ResidentTab(val label: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MaintenanceApp(authViewModel: AuthViewModel) {
+fun MaintenanceApp(authViewModel: AuthViewModel, reportsViewModel: ReportsViewModel) {
     val authState by authViewModel.state.collectAsStateWithLifecycle()
+    val reportsState by reportsViewModel.state.collectAsStateWithLifecycle()
     val user = authState.user
+
+    LaunchedEffect(user?.id) {
+        if (user == null) {
+            reportsViewModel.clear()
+        } else if (user.role == "STUDENT") {
+            reportsViewModel.load()
+        }
+    }
 
     if (user == null) {
         AuthScreen(
@@ -57,12 +70,27 @@ fun MaintenanceApp(authViewModel: AuthViewModel) {
         return
     }
 
-    ResidentApp(user, authViewModel::signOut)
+    ResidentApp(
+        user = user,
+        reportsState = reportsState,
+        onRefreshReports = reportsViewModel::load,
+        onSubmitReport = reportsViewModel::submit,
+        onSignOut = {
+            reportsViewModel.clear()
+            authViewModel.signOut()
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ResidentApp(user: UserDto, onSignOut: () -> Unit) {
+private fun ResidentApp(
+    user: UserDto,
+    reportsState: ReportsUiState,
+    onRefreshReports: () -> Unit,
+    onSubmitReport: (CreateReportRequestDto, () -> Unit) -> Unit,
+    onSignOut: () -> Unit
+) {
     var selectedTab by rememberSaveable { mutableStateOf(ResidentTab.Home) }
     var showingReportForm by rememberSaveable { mutableStateOf(false) }
 
@@ -110,13 +138,17 @@ private fun ResidentApp(user: UserDto, onSignOut: () -> Unit) {
     ) { contentPadding ->
         if (showingReportForm) {
             ReportProblemScreen(
-                contentPadding = contentPadding
+                contentPadding = contentPadding,
+                state = reportsState,
+                onSubmit = { request -> onSubmitReport(request) { showingReportForm = false } }
             )
         } else {
             ResidentScreen(
                 tab = selectedTab.name,
                 user = user,
                 contentPadding = contentPadding,
+                reports = reportsState,
+                onRefreshReports = onRefreshReports,
                 onReportProblem = { showingReportForm = true },
                 onViewAllReports = { selectedTab = ResidentTab.Reports },
                 onSignOut = onSignOut
