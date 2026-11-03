@@ -168,6 +168,13 @@ private fun ReportsScreen(
             Text("My reports", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             OutlinedButton(onClick = onRefresh, enabled = !state.isLoading) { Text("Refresh") }
         }
+        if (state.reports.any { it.isDemo }) {
+            Text(
+                "Sample preview data only. These examples are not saved; reports you submit are saved to your account.",
+                color = MaterialTheme.colorScheme.tertiary,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
         state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         if (state.isLoading && state.reports.isEmpty()) {
             CircularProgressIndicator()

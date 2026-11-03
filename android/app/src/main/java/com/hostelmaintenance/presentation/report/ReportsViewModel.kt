@@ -2,10 +2,12 @@ package com.hostelmaintenance.presentation.report
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hostelmaintenance.BuildConfig
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
 import com.hostelmaintenance.data.auth.ApiErrorDto
 import com.hostelmaintenance.data.report.CreateReportRequestDto
+import com.hostelmaintenance.data.report.DemoReportSamples
 import com.hostelmaintenance.data.report.MaintenanceReportDto
 import com.hostelmaintenance.data.report.ReportRepository
 import java.io.IOException
@@ -32,7 +34,13 @@ class ReportsViewModel(private val repository: ReportRepository) : ViewModel() {
         viewModelScope.launch {
             mutableState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                mutableState.update { it.copy(isLoading = false, reports = repository.listMine()) }
+                val savedReports = repository.listMine()
+                val visibleReports = if (BuildConfig.DEBUG && savedReports.isEmpty()) {
+                    DemoReportSamples.create()
+                } else {
+                    savedReports
+                }
+                mutableState.update { it.copy(isLoading = false, reports = visibleReports) }
             } catch (exception: HttpException) {
                 mutableState.update { it.copy(isLoading = false, errorMessage = httpError(exception)) }
             } catch (exception: IOException) {
@@ -50,7 +58,7 @@ class ReportsViewModel(private val repository: ReportRepository) : ViewModel() {
                 mutableState.update {
                     it.copy(
                         isSubmitting = false,
-                        reports = listOf(created) + it.reports.filterNot { report -> report.id == created.id },
+                        reports = listOf(created) + it.reports.filterNot { report -> report.isDemo || report.id == created.id },
                         successMessage = "Report submitted and saved."
                     )
                 }
