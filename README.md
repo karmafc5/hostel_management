@@ -76,13 +76,27 @@ To load sample reports for an existing resident account, set `MOCK_DATA_STUDENT_
 
 The Android client supports resident registration/sign-in against the API, encrypted local token storage, resident navigation, and report submission/history backed by MongoDB through the API. The report form validates its fields on the phone and the server; it shows a save error if the request fails. Image attachments, staff/admin screens, and notifications are not implemented.
 
-The emulator uses `http://10.0.2.2:8080/` by default. To connect a physical phone on the same local network, build with the development computer's LAN IP:
+The default `http://10.0.2.2:8080/` address is for the Android emulator only. A physical phone must use the development PC's LAN IP. Set it in the ignored `local.properties` file (preserve its existing `sdk.dir` line):
 
 ```powershell
-.\gradlew.bat -PapiBaseUrl=http://192.168.1.20:8080/ :android:app:assembleDebug
+$pcIp = Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias "Wi-Fi" |
+    Where-Object { $_.IPAddress -notmatch '^(127|169\.254)\.' } |
+    Select-Object -First 1 -ExpandProperty IPAddress
+$properties = Get-Content .\local.properties | Where-Object { $_ -notmatch '^api\.baseUrl=' }
+$properties += "api.baseUrl=http://${pcIp}:8080/"
+Set-Content .\local.properties $properties
+.\gradlew.bat :android:app:printApiBaseUrl
+.\gradlew.bat :android:app:assembleDebug
 ```
 
-Replace `192.168.1.20` with the computer's actual LAN IP. Debug builds allow local HTTP; production connections must use HTTPS.
+Restarting the laptop stops the backend; it must be started again before the phone can connect. After reboot, run the backend startup commands above in a PowerShell window, then confirm `http://<PC-LAN-IP>:8080/health` returns `{"status":"ok"}` from both the PC and the phone's browser. Those commands prompt for the database password again because the credentials are held only in that PowerShell process. The backend must finish its MongoDB Atlas initialization before it starts listening. Keep the PC and phone on the same Wi-Fi. If the laptop receives a different Wi-Fi IP after reboot, rerun the Android URL/build commands above and reinstall the APK on the phone; the API address is embedded in the app at build time. Reserving the laptop's IP in the router's DHCP settings avoids that rebuild after future restarts. If the PC can reach `/health` but the phone cannot, allow inbound TCP port 8080 on the PC's **Private** Windows Firewall profile:
+
+```powershell
+# Run in an elevated PowerShell window; do not disable the firewall.
+New-NetFirewallRule -DisplayName "Hostel Maintenance API (Private)" -Direction Inbound -Protocol TCP -LocalPort 8080 -Action Allow -Profile Private
+```
+
+The app's sign-in and report error messages show the API URL embedded in that build and remind physical-phone users that `10.0.2.2` is emulator-only. Use `-PapiBaseUrl=http://<PC-LAN-IP>:8080/` to override the local setting for one build. Debug builds allow local HTTP; production connections must use HTTPS.
 
 ## Tests and debug APK
 
@@ -90,7 +104,7 @@ Replace `192.168.1.20` with the computer's actual LAN IP. Debug builds allow loc
 .\gradlew.bat :backend:test :android:app:assembleDebug
 ```
 
-The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. Install it on a connected phone with Android platform tools:
+On a Windows checkout inside OneDrive, Gradle writes build outputs outside the synchronized folder to avoid OneDrive locking generated files. The APK is at `%LOCALAPPDATA%\HostelMaintenance\gradle-build\_android_app\outputs\apk\debug\app-debug.apk`. Other checkouts use `android/app/build/outputs/apk/debug/app-debug.apk`. Install it on an authorized connected phone with Android platform tools:
 
 ```powershell
 adb install -r android\app\build\outputs\apk\debug\app-debug.apk

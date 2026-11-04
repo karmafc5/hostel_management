@@ -54,7 +54,7 @@ class ReportsViewModel(private val repository: ReportRepository) : ViewModel() {
                     it.copy(
                         isLoading = false,
                         reports = previewIfNeeded(it.reports),
-                        errorMessage = "Unable to reach the server. Showing sample preview data."
+                        errorMessage = "${connectionErrorMessage()} Showing sample preview data."
                     )
                 }
             }
@@ -78,7 +78,12 @@ class ReportsViewModel(private val repository: ReportRepository) : ViewModel() {
             } catch (exception: HttpException) {
                 mutableState.update { it.copy(isSubmitting = false, errorMessage = httpError(exception)) }
             } catch (exception: IOException) {
-                mutableState.update { it.copy(isSubmitting = false, errorMessage = "Unable to reach the server. Your report was not saved.") }
+                mutableState.update {
+                    it.copy(
+                        isSubmitting = false,
+                        errorMessage = "${connectionErrorMessage()} Your report was not saved."
+                    )
+                }
             }
         }
     }
@@ -89,6 +94,11 @@ class ReportsViewModel(private val repository: ReportRepository) : ViewModel() {
 
     private fun previewIfNeeded(reports: List<MaintenanceReportDto>): List<MaintenanceReportDto> =
         if (BuildConfig.DEBUG && reports.isEmpty()) DemoReportSamples.create() else reports
+
+    private fun connectionErrorMessage(): String =
+        "Cannot reach ${BuildConfig.API_BASE_URL}. Start the backend. For a physical phone, set " +
+            "api.baseUrl in local.properties to the PC's LAN IP (10.0.2.2 only works on an emulator), " +
+            "use the same Wi-Fi, and allow inbound TCP 8080 in Windows Firewall."
 
     private fun httpError(exception: HttpException): String {
         val fallback = when (exception.code()) {

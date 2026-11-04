@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
+import com.hostelmaintenance.BuildConfig
 import com.hostelmaintenance.data.auth.ApiErrorDto
 import com.hostelmaintenance.data.auth.AuthRepository
 import com.hostelmaintenance.data.auth.RegisterRequestDto
@@ -39,7 +40,7 @@ class AuthViewModel(
                 }
             } catch (exception: IOException) {
                 mutableState.update {
-                    it.copy(isLoading = false, errorMessage = "Unable to reach the server. Check your connection.")
+                    it.copy(isLoading = false, errorMessage = connectionErrorMessage())
                 }
             } catch (exception: IllegalStateException) {
                 mutableState.update {
@@ -114,7 +115,7 @@ class AuthViewModel(
                 mutableState.update { it.copy(isLoading = false, errorMessage = httpErrorMessage(exception)) }
             } catch (exception: IOException) {
                 mutableState.update {
-                    it.copy(isLoading = false, errorMessage = "Unable to reach the server. Check your connection.")
+                    it.copy(isLoading = false, errorMessage = connectionErrorMessage())
                 }
             } catch (exception: IllegalStateException) {
                 mutableState.update {
@@ -139,4 +140,9 @@ class AuthViewModel(
             fallback
         }
     }
+
+    private fun connectionErrorMessage(): String =
+        "Cannot reach ${BuildConfig.API_BASE_URL}. Start the backend. On a physical phone, set " +
+            "api.baseUrl in local.properties to http://<PC-LAN-IP>:8080/ (10.0.2.2 is emulator-only). " +
+            "Keep the phone and PC on the same Wi-Fi and allow inbound TCP 8080 in Windows Firewall."
 }
